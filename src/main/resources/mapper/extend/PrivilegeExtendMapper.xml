@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.briup.dao.extend.PrivilegeExtendMapper">
+	<select id="selectAll" resultMap="PrivilegeTreeResultMap">
+		SELECT *
+		FROM cms_privilege
+		WHERE parent_id is null
+	</select>
+
+	<!-- <select id="selectByUserId" resultType="com.briup.bean.Privilege"> -->
+	<select id="selectByUserId"
+		resultMap="com.briup.dao.PrivilegeMapper.BaseResultMap">
+		select p.*
+		from cms_user u ,cms_user_role ur, cms_role r, cms_role_privilege rp
+		,cms_privilege p
+		where u.id = ur.user_id
+		and u.id = #{id,jdbcType=INTEGER}
+	</select>
+
+	<select id="selectByParentId" resultMap="PrivilegeTreeResultMap">
+		<!--<select id="selectByParentId" resultType="com.briup.apps.cms.bean.BasePrivilege"> -->
+		SELECT *
+		FROM cms_privilege
+		WHERE parent_id = #{id,jdbcType=INTEGER}
+	</select>
+
+	<!-- <select id="selectByRoleId" resultType="com.briup.bean.Privilege"> -->
+	<select id="selectByRoleId"
+		resultMap="com.briup.dao.PrivilegeMapper.BaseResultMap">
+		SELECT p.*
+		from cms_privilege p, cms_role r, cms_role_privilege rp
+		WHERE rp.role_id = r.id
+		AND rp.privilege_id = p.id
+		AND r.id = #{id,jdbcType=INTEGER}
+	</select>
+	
+	<select id="selectMenuByUserId" resultMap="com.briup.dao.PrivilegeMapper.BaseResultMap">
+	    select p.*
+	    from cms_user u ,cms_user_role ur, cms_role r, cms_role_privilege rp ,cms_privilege p
+	    where u.id = ur.user_id
+	    and r.id = ur.role_id
+	    and rp.role_id = r.id
+	    and rp.privilege_id = p.id
+	    and u.id = #{id,jdbcType=INTEGER}
+	    and p.type = 'menu'
+  </select>
+
+	
+
+	<resultMap id="PrivilegeTreeResultMap"
+		type="com.briup.vm.PrivilegeTree"
+		extends="com.briup.dao.PrivilegeMapper.BaseResultMap">
+		<collection property="children" column="id"
+			select="selectByParentId"></collection>
+	</resultMap>
+
+</mapper>
